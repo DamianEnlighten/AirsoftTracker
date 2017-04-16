@@ -42,7 +42,7 @@ app.post('/user/location', function (req, res) {
     //Store users lcoation in BD by device ID
 	var device= req.body.deviceId
 	if (device) {
-		console.log("Ipdating location for "+ device);
+		console.log("Updating location for "+ device);
 		storeLocation(req.body,res);
 	}
 	else {
