@@ -5,7 +5,7 @@ install visual studio community edition or other IDE
 install android studio
 install nvm for windows
 install git for windows
-install java SDK
+install java SDK 8.0+
 install tortoise git (opt)
 
 From command prompt/power shell
@@ -19,4 +19,14 @@ npm install in ./AirsoftMap
 
 npm install in ./MapServer
 
-hackintosh?
+Run:
+
+Launch Ionic application:
+
+ionic serve --lab
+
+Launch Server:
+
+open cmd/powershell
+cd {{file path}}/Airsoft Minimap\MapServer
+node server.js

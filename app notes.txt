@@ -1,37 +1,45 @@
 Phase 1
 
-App idea, Airsoft minimap, using phones location apis and google maps to plot users on map, IDs float over pins or just names on map, password to connect users like darksouls, also allow for custom maps
+App idea, Airsoft minimap, using phones location apis and google maps to plot users on map, IDs float over pins or just names on map, password to connect users like darksouls
 likely would have to update on a timer to save on battery and bandwidth but it could be either
-basic idea would be to give situational awareness but could make it configurable if people want it faster
 
 basic steps are 
 1. send location to DB
 2. plot current pin and center view on pin on map
 3. get other users pins back with same password from DB
 4. plot pins within view and their IDs
+5. resize view area
 repeat ad infinitum
 
 Users don't need a login as we can just use their device IDs as unique identifiers
 but maybe add "accounts" later for marketing and retention purposes
 alongside history
 
-Visual studio community edition
-Git repo
-Cordova
-Ionic 2
 angular 2
-nvm
-Node
 Googles maps api integration
+
+ionic start myApp blank --v2
 
 
 Phase 1.
 client-
+custom pin for user
 map, user pin, 
 group pins, 
 options page to set update interval, 
 ID/Name to display on map, and passcode.
-lock to north or rotate map on rotate device
+Time stamp on pin info window.
+
+North indicator->
+lock to north or rotate map on rotate device.
+
+Options:
+Name.
+Code.
+Refresh interval.
+Zoom level.
+Turn off location updates/watch mode
+
 
 polling vs server push?
 
@@ -55,3 +63,7 @@ History of where people have been
 Show friendlies as map pins on edge of screen if outside current area
 Custom Maps
 Stats K/D
+
+
+App2
+social airsoft app/messaging/user lists events

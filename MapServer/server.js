@@ -4,9 +4,9 @@ var mysql = require('mysql');
 
 var connection = mysql.createConnection({
     host: 'localhost',
-    user: 'me',
-    password: 'secret',
-    database: 'my_db'
+    user: 'airsoftserver',
+    password: 'serverTime',
+    database: 'AirsoftMap'
 });
 
 //Server=localhost\SQLEXPRESS;Database=master;Trusted_Connection=True;
@@ -20,14 +20,33 @@ app.get('/', function (req, res) {
 
 //get all users location with given code
 app.get('/user/location', function (req, res) {
-    res.send({
-        status: '200',
-        players:[]
-    });
+    var code;
+    var locations = [];
+
+    code = req.query.code;
+    locations = getLocations(code);
+
+    if (locations !== 'error') {
+        res.send({
+            status: '200',
+            players: locations,
+            message: 'success' 
+        });
+    }
+    else {
+        res.send({
+            status: '400',
+            message: 'bad request'
+        });
+    }
 })
 
 app.post('/user/location', function (req, res) {
     //Store users lcoation in BD by device ID
+
+    //INSERT INTO locations (name,lat,lng,code)
+    //VALUES('Squad 1', 42.2398235, -83.2351095, 'ghost');
+    console.log(req.data);
 
     res.send({ status: "200", message: "success" });
 })
@@ -40,11 +59,10 @@ app.listen(3000, function () {
 })
 
 
-function storeLocation() {
+function storeLocation(location) {
 
     connection.connect();
-
-    connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+    connection.query('INSERT INTO locations VALUES (' + location.name + ',' + location.lat + ',' + location.lng + ',' + location.code + ',' + location.deviceId +') ON DUPLICATE KEY UPDATE;', function (error, results, fields) {
         if (error) console.error(error);
         console.log('The solution is: ', results[0].solution);
     });
@@ -52,13 +70,16 @@ function storeLocation() {
     connection.end();
 }
 
-function getLocations() {
+function getLocations(code) {
 
     connection.connect();
-
-    connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-        if (error) console.error(error);
-        console.log('The solution is: ', results[0].solution);
+    connection.query('SELECT * FROM locations WHERE locations.code = '+code+';', function (error, results, fields) {
+        if (error) {
+            console.error(error);
+            return 'error';
+        }
+        console.log('The solution is: ', results);
+        return results;
     });
 
     connection.end();
