@@ -1,13 +1,16 @@
 var express = require('express');
 var app = express();
-var mysql = require('mysql');
+const sql = require('mssql');
+var bodyParser = require('body-parser');
 
-var connection = mysql.createConnection({
-    host: 'localhost',
+app.use(bodyParser.json());
+
+var config = {
+    server: 'localhost',
     user: 'airsoftserver',
-    password: 'serverTime',
+    password: 'testing',
     database: 'AirsoftMap'
-});
+};
 
 //Server=localhost\SQLEXPRESS;Database=master;Trusted_Connection=True;
 
@@ -22,65 +25,112 @@ app.get('/', function (req, res) {
 app.get('/user/location', function (req, res) {
     var code;
     var locations = [];
-
     code = req.query.code;
-    locations = getLocations(code);
-
-    if (locations !== 'error') {
-        res.send({
-            status: '200',
-            players: locations,
-            message: 'success' 
-        });
-    }
-    else {
-        res.send({
-            status: '400',
-            message: 'bad request'
-        });
-    }
+	if (code) {
+		console.log("getting locations for "+code);
+		getLocations(code,res);
+	}
+	else{
+		res.send({
+			status: '400',
+			message: 'bad request'
+		});
+	}
 })
 
 app.post('/user/location', function (req, res) {
     //Store users lcoation in BD by device ID
-
-    //INSERT INTO locations (name,lat,lng,code)
-    //VALUES('Squad 1', 42.2398235, -83.2351095, 'ghost');
-    console.log(req.data);
-
-    res.send({ status: "200", message: "success" });
+	var device= req.body.deviceId
+	if (device) {
+		console.log("Ipdating location for "+ device);
+		storeLocation(req.body,res);
+	}
+	else {
+		res.send({
+			status: '400',
+			message: 'bad request'
+		});
+	}
 })
 
 //clean up old users/locations
 
 
 app.listen(3000, function () {
-    console.log('Server listening on port 3000')
+    console.log('Server listening on port 3000');
 })
 
+function storeLocation(location,res) {
+	// connect to your database
+    sql.connect(config, function (err) {
+    
+        if (err) {
+			console.log(err)
+			res.send({
+				status: '500',
+				message: 'DB Connection Error'
+			});
+		}
 
-function storeLocation(location) {
-
-    connection.connect();
-    connection.query('INSERT INTO locations VALUES (' + location.name + ',' + location.lat + ',' + location.lng + ',' + location.code + ',' + location.deviceId +') ON DUPLICATE KEY UPDATE;', function (error, results, fields) {
-        if (error) console.error(error);
-        console.log('The solution is: ', results[0].solution);
+        // create Request object
+        var request = new sql.Request();
+           
+        // query to the database and get the records
+        request.query(
+		`IF EXISTS (SELECT * FROM locations WHERE deviceId = '`+location.deviceId+`')
+			UPDATE locations
+			SET lat='`+location.lat+`', lng='`+location.lng+`',code='`+location.code+`', name='`+location.name+`'
+			WHERE deviceId = '`+location.deviceId+`'
+		ELSE
+			INSERT Into locations VALUES ('`+location.name+`',`+location.lat+`,`+location.lng+`,'`+location.code+`','`+location.deviceId+`');`, function (err, results) {
+            
+            if (err) {			
+				console.log(err);
+				res.send({
+					status: '400',
+					message: 'bad request'
+				});
+			}
+			else{
+				res.send({ status: "200", message: "success" });
+			}
+            sql.close();
+        });
     });
-
-    connection.end();
 }
 
-function getLocations(code) {
+function getLocations(code,res) {
+	
+	// connect to your database
+    sql.connect(config, function (err) {
+    
+        if (err) {
+			console.log(err)
+			res.send({
+				status: '500',
+				message: 'DB Connection Error'
+			});
+		}
 
-    connection.connect();
-    connection.query('SELECT * FROM locations WHERE locations.code = '+code+';', function (error, results, fields) {
-        if (error) {
-            console.error(error);
-            return 'error';
-        }
-        console.log('The solution is: ', results);
-        return results;
+        // create Request object
+        var request = new sql.Request();
+           
+        // query to the database and get the records
+        request.query('SELECT * FROM locations WHERE locations.code = \''+code+'\';', function (err, results) {
+            console.log(results);
+            if (err) {			
+				console.log(err);
+				res.send({
+					status: '400',
+					message: 'bad request'
+				});
+			}
+			else
+			{
+				// send records as a response
+				res.send({ status: "200", message: "success", locations:results.recordset });
+			}
+            sql.close();
+        });
     });
-
-    connection.end();
 }
