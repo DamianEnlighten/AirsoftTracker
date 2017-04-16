@@ -1,7 +1,9 @@
-﻿import { Component, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Device } from '@ionic-native/device';
+
+import { LocationService } from '../../services/location.service';
 
 declare var google;
 
@@ -9,28 +11,40 @@ declare var google;
     selector: 'home-page',
     templateUrl: 'home.html'
 })
-export class HomePage {
+export class HomePage implements OnInit {
 
     @ViewChild('map') mapElement: ElementRef;
     map: any;
     player: any;
     updateTimer: any;
-    deviceID: string;
+    deviceId: string;
+    locations: any;
+    code: string;
+    errorMessage: string;
+    name: string;
 
     constructor(
         public navCtrl: NavController,
         public geolocation: Geolocation,
         private device: Device,
-        private platform: Platform) {
+        private platform: Platform,
+        private locationService: LocationService) {
 
         platform.ready().then(() => {
-            this.deviceID = "ID10T"
-            if (device) {
-                this.deviceID = device.uuid;
+            if (device && device.uuid) {
+                this.deviceId = device.uuid;
+            }
+            else {
+                this.deviceId = "ID10T";
+                this.name = "PC"
             }
         }, (err) => {
             console.log(err);
         });
+    }
+
+    ngOnInit(): void {
+        this.code = 'ghost';
     }
 
     ionViewDidLoad() {
@@ -45,7 +59,7 @@ export class HomePage {
 
             let mapOptions = {
                 center: latLng,
-                zoom: 15,
+                zoom: 18,
                 mapTypeId: google.maps.MapTypeId.SATELLITE,
                 disableDefaultUI: true
             }
@@ -53,12 +67,20 @@ export class HomePage {
             this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
             this.addMarker(latLng);
+            
+            let location = {
+                deviceId: this.deviceId,
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                code: this.code,
+                name: this.name
+            }
 
             //send updated user info to API
-            this.sendUpdatedLocation();
+            this.sendUpdatedLocation(location);
 
             //get group locations
-            this.getUpdateLocations
+            this.getUpdateLocations(this.code);
 
         }, (err) => {
             console.log(err);
@@ -104,11 +126,27 @@ export class HomePage {
         //open options menu
     }
 
-    getUpdateLocations() {
-        //get group locations
+    getUpdateLocations(code): void {
+        this.locationService.getLocations(code).subscribe(
+            (locations) => {
+                this.locations = locations;
+                console.log(this.locations);
+            },
+            (error) => {
+                this.errorMessage = <any>error
+            }
+        )
     }
 
-    sendUpdatedLocation() {
-
+    sendUpdatedLocation(location) {
+        this.locationService.setLocation(location).subscribe(
+            (locations) => {
+                this.locations = locations;
+                console.log(this.locations);
+            },
+            (error) => {
+                this.errorMessage = <any>error
+            }
+        );
     }
 }

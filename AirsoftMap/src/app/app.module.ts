@@ -5,9 +5,11 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Device } from '@ionic-native/device';
+import { HttpModule } from '@angular/http';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { LocationService } from '../services/location.service';
 
 @NgModule({
     declarations: [
@@ -16,7 +18,8 @@ import { HomePage } from '../pages/home/home';
     ],
     imports: [
         BrowserModule,
-        IonicModule.forRoot(MyApp)
+        IonicModule.forRoot(MyApp),
+        HttpModule
     ],
     bootstrap: [IonicApp],
     entryComponents: [
@@ -28,6 +31,7 @@ import { HomePage } from '../pages/home/home';
         SplashScreen,
         Geolocation,
         Device,
+        LocationService,
         { provide: ErrorHandler, useClass: IonicErrorHandler }
     ]
 })
