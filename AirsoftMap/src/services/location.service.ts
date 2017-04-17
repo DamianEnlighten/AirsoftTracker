@@ -5,6 +5,8 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 
+import { LocationResponse } from '../models/location'
+
 @Injectable()
 export class LocationService {
 
@@ -12,12 +14,12 @@ export class LocationService {
 
     constructor(private http: Http) { }
 
-    getLocations(code): Observable<Location[]> {
+    getLocations(code): Observable<LocationResponse> {
         return this.http.get(this.locationsUrl +"?code="+code)
             .map(this.extractData)
             .catch(this.handleError);
     }
-    setLocation(location): Observable<Location> {
+    setLocation(location): Observable<LocationResponse> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
 
@@ -27,8 +29,9 @@ export class LocationService {
     }
 
     private extractData(res: Response) {
+        console.log(res);
         let body = res.json();
-        return body.data || {};
+        return body || {};
     }
 
     private handleError(error: Response | any) {

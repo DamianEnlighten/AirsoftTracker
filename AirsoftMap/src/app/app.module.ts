@@ -9,12 +9,14 @@ import { HttpModule } from '@angular/http';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { OptionsPage } from '../pages/options/options';
 import { LocationService } from '../services/location.service';
 
 @NgModule({
     declarations: [
         MyApp,
-        HomePage
+        HomePage,
+        OptionsPage
     ],
     imports: [
         BrowserModule,
@@ -24,7 +26,8 @@ import { LocationService } from '../services/location.service';
     bootstrap: [IonicApp],
     entryComponents: [
         MyApp,
-        HomePage
+        HomePage,
+        OptionsPage
     ],
     providers: [
         StatusBar,

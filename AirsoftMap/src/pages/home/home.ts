@@ -4,6 +4,7 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { Device } from '@ionic-native/device';
 
 import { LocationService } from '../../services/location.service';
+import { OptionsPage } from '../options/options'
 
 declare var google;
 
@@ -22,13 +23,14 @@ export class HomePage implements OnInit {
     code: string;
     errorMessage: string;
     name: string;
+    markers: any;
 
     constructor(
         public navCtrl: NavController,
         public geolocation: Geolocation,
         private device: Device,
         private platform: Platform,
-        private locationService: LocationService) {
+        private locationService: LocationService, ) {
 
         platform.ready().then(() => {
             if (device && device.uuid) {
@@ -44,12 +46,17 @@ export class HomePage implements OnInit {
     }
 
     ngOnInit(): void {
+        //read settings from localstorage
         this.code = 'ghost';
+        this.markers = [];
     }
 
     ionViewDidLoad() {
         this.loadMap();
     }
+
+    //North indicator->
+    //lock to north or rotate map on rotate device.
 
     loadMap() {
 
@@ -66,8 +73,8 @@ export class HomePage implements OnInit {
 
             this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-            this.addMarker(latLng);
-            
+            this.addPlayer(latLng);
+
             let location = {
                 deviceId: this.deviceId,
                 lat: position.coords.latitude,
@@ -88,21 +95,52 @@ export class HomePage implements OnInit {
 
     }
 
-    addMarker(latLng) {
+    addPlayer(latLng) {
 
         this.player = new google.maps.Marker({
             map: this.map,
             icon: {
                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                scale: 3,
-                fillColor: 'green'
+                scale: 3
             },
-            labelContent: 'Name',
-            labelAnchor: new google.maps.Point(15, 100),
-            labelClass: "self", // the CSS class for the label
+            label: 'Name',
             animation: google.maps.Animation.DROP,
             position: latLng
         });
+
+    }
+
+    plotLocation(location) {
+        //check if marker exists if yes move it, otherwise plot it
+        //marker.setPosition(results[0].geometry.location);
+        console.log("plotting locations");
+        console.log(location);
+
+        let found = false;
+        let index = 0;
+
+        for (var i = 0; i < this.markers.length; i++) {
+            if (this.markers[i].id == location.deviceId) {
+                found = true;
+                index = i;
+                break;
+            }
+        }
+
+        let latLng = new google.maps.LatLng(location.lat, location.lng);
+
+        if (found) {
+            this.markers[index].setPosition(latLng);
+        }
+        else {
+            new google.maps.Marker({
+                map: this.map,
+                label: location.name,
+                animation: google.maps.Animation.DROP,
+                position: latLng,
+                id: location.deviceId
+            });
+        }
 
     }
 
@@ -117,6 +155,17 @@ export class HomePage implements OnInit {
             //update pin 
             this.player.setPosition(latLng);
 
+            let location = {
+                deviceId: this.deviceId,
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                code: this.code,
+                name: this.name
+            }
+
+            //send updated user info to API
+            this.sendUpdatedLocation(location);
+
         }, (err) => {
             console.log(err);
         });
@@ -124,13 +173,22 @@ export class HomePage implements OnInit {
 
     options() {
         //open options menu
+        this.navCtrl.push(OptionsPage);
     }
 
     getUpdateLocations(code): void {
         this.locationService.getLocations(code).subscribe(
-            (locations) => {
-                this.locations = locations;
-                console.log(this.locations);
+            (response) => {
+                console.log('get',response);
+                if (response.status == "200") {
+                    this.locations = response.locations;
+                    for (var i = 0; i < this.locations.length; i++) {
+                        this.plotLocation(this.locations[i]);
+                    }
+                }
+                else {
+                    console.log(response)
+                }
             },
             (error) => {
                 this.errorMessage = <any>error
@@ -140,9 +198,12 @@ export class HomePage implements OnInit {
 
     sendUpdatedLocation(location) {
         this.locationService.setLocation(location).subscribe(
-            (locations) => {
-                this.locations = locations;
-                console.log(this.locations);
+            (response) => {
+                console.log('send',response);
+                if (response.status == "200") { }
+                else {
+                    console.log(response);
+                }
             },
             (error) => {
                 this.errorMessage = <any>error
