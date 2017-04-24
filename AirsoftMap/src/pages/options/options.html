@@ -1,18 +1,28 @@
-﻿<!--
-  Generated template for the Options page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
-<ion-header>
-
+﻿<ion-header>
   <ion-navbar>
-    <ion-title>Options</ion-title>
+    <ion-buttons left>
+      <button (click)="back()" ion-button navPop icon-only>
+        <ion-icon ios="ios-arrow-back" md="md-arrow-back"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-title>
+      Options
+    </ion-title>
   </ion-navbar>
-
 </ion-header>
-
-
 <ion-content padding>
+  <ion-label>Passcode</ion-label>
+  <ion-input [(ngModel)]="code" placeholder="Passcode"></ion-input>
 
+  <ion-label>Display Name</ion-label>
+  <ion-input [(ngModel)]="name" placeholder="Display Name"></ion-input>
+
+  <ion-label>Update Interval (Seconds)</ion-label>
+  <ion-input [(ngModel)]="interval" placeholder="Seconds"></ion-input>
+
+  <ion-label>Transmit Location</ion-label>
+  <ion-toggle class="toggle" checked="{{updateLocation}}" (click)="toggleLocation()"></ion-toggle>
+
+  <button ion-button class="button-block content-button" (click)="saveSettings()">Save</button>
+  <button ion-button class="button-block content-button" (click)="resetSettings()">Default Settings</button>
 </ion-content>
