@@ -1,4 +1,4 @@
-﻿import { NgModule, Input } from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { OptionsPage } from './options';
 
 @NgModule({
